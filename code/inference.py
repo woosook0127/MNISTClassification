@@ -30,57 +30,11 @@ def get_alphabet(root: str, batch_size: int):
     train_path = os.path.join(root, 'train')
     test_path = os.path.join(root, 'test')
     
-    train1_rotation = ImageFolder(root = train_path,
-                                 transform=transforms.Compose([
-                                     transforms.ToTensor(),
-#                                      transforms.Normalize(mean=(0.1307,), std=(0.3081,)),
-                                     transforms.Grayscale(1),
-                                     transforms.RandomRotation(5)
-                                 ]),
-                                 target_transform=None)
-    
-    train2_default = ImageFolder(root = train_path,
-                                 transform=transforms.Compose([
-                                     transforms.ToTensor(),
-#                                     transforms.Normalize(mean=(0.1307,), std=(0.3081,)),
-                                     transforms.Grayscale(1)
-                                     #, transforms.CenterCrop(26), transfroms.Resize(28)
-                                 ]),
-                                 target_transform=None)
-    
-    train3_crop = ImageFolder(root = train_path,
-                                 transform=transforms.Compose([
-                                     transforms.ToTensor(),
-#                                     transforms.Normalize(mean=(0.1307,), std=(0.3081,)),
-                                     transforms.Grayscale(1),
-                                     transforms.CenterCrop(26),
-                                     transforms.Resize(28)
-                                 ]),
-                                 target_transform=None)
-    
-    train4_inv = ImageFolder(root = train_path,
-                                 transform=transforms.Compose([
-                                     transforms.ToTensor(),
-#                                     transforms.Normalize(mean=(0.1307,), std=(0.3081,)),
-                                     transforms.Grayscale(1),
-                                     transforms.RandomInvert()
-                                 ]),
-                                 target_transform=None)
-    
-    
     test_default = ImageFolder(root = test_path,
                                  transform=transforms.Compose([
                                      transforms.ToTensor(),
-                                     transforms.Grayscale(1)
-                                 ]),
-                                 target_transform=None)
-
-    train_kaggle = ImageFolder(root = "/home/r320/wooseok/MNISTClassification/dataset/alpha_small/train",
-                                 transform=transforms.Compose([
-                                     transforms.ToTensor(),
-                                     transforms.Resize(28),
                                      transforms.Grayscale(1),
-                                     transforms.RandomInvert(1)
+                                     transforms.RandomRotation(7)
                                  ]),
                                  target_transform=None)
     
@@ -89,22 +43,10 @@ def get_alphabet(root: str, batch_size: int):
                                      transforms.ToTensor(),
                                      transforms.Resize(28),
                                      transforms.Grayscale(1),
-                                     transforms.RandomInvert(1)
-#                                      transforms.RandomInvert(1)
+                                     transforms.RandomInvert(1),
+                                     transforms.RandomRotation(7)
                                  ]),
                                  target_transform=None)
-
-    train_loader = DataLoader(train1_rotation,
-                              batch_size=batch_size,
-                              shuffle=True,
-                              drop_last=True,
-                              num_workers=8)
-   
-    train_loader2 = DataLoader(train_kaggle,
-                              batch_size=batch_size,
-                              shuffle=True,
-                              drop_last=True,
-                              num_workers=8)
 
     test_loader = DataLoader(test_default,
                              batch_size=batch_size,
@@ -118,15 +60,12 @@ def get_alphabet(root: str, batch_size: int):
                              drop_last=False,
                              num_workers=8) 
 
-
-    data_to_show = train2_default
-
-    return (train_loader, test_loader, train_loader2, test_loader2)
+    return (test_loader, test_loader2)
 
 
 data_path = "/home/r320/wooseok/MNISTClassification/dataset/processed_data/"
 
-train_loader, test_loader, train_loader2, test_loader2 = get_alphabet(data_path, batch_size)
+test_loader, test_loader2 = get_alphabet(data_path, batch_size)
 
 
 # # CNN Class
@@ -176,17 +115,31 @@ class CNN(nn.Module):
         return out
 
 # # Define model
-#model = CNN().to(device)
-model = torch.load("/home/r320/wooseok/MNISTClassification/weights/processed_Rotate_GAP_adam_reduceLR_all5kernel070ep_acc99.86873626708984.pth").to(device)
+#model_name = "processed_Rotate_GAP_adam_reduceLR_all5kernel070ep_acc99.86873626708984.pth"
+#model_name = "Finetune_lr04_GAP_adam_reduceLR_5555kernel052ep_acc99.7812271118164acc297.39000701904297.pth"
+#model_name = "Finetune_mergeddata_GAP_adam_reduceLR_5555kernel123ep_acc99.82498168945312.pth"
+#model_name = "originaldata_GAP_adam_reduceLR_5553kernel072ep_acc99.82498168945312.pth"
+#model_name = "rotate_drpout04_adamoptim_kernel5_126ep_acc99.5619888305664.pth"
+#model_name = "Finetune_lr04_GAP_adam_reduceLR_5555kernel123ep_acc99.82498168945312acc297.24085998535156.pth"
+#model_name = "double_traind_cos_tunning_lr03_GAP_adamw_5555kernel1120ep_acc99.89061737060547.pth"
+#model_name = "FT_Round_9989_with_kaggle_cos031ep_acc99.84686279296875acc297.4645767211914.pth"
+#model_name = "FT_Round_9989_with_kaggle_cos031ep_acc99_84686279296875_97_4645767211914.pth"
 
-loss_func = nn.CrossEntropyLoss().to(device)
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=10)
-# optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-2)
-# scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=10, eta_min=1e-6)
+model_arr = []
+model_name_arr = []
 
+def import_model(model_name):
+    model = torch.load("/home/r320/wooseok/MNISTClassification/weights/"+ model_name).to(device)
+    model_arr.append(model)
+    model_name_arr.append(model_name)
 
-# # Training
+import_model("FT_Round_9989_with_kaggle_cos031ep_acc99_84686279296875_97_4645767211914.pth")
+import_model("FT_Round_9989_with_kaggle_cos031ep_acc99.84686279296875acc297.4645767211914.pth")
+import_model("double_traind_cos_tunning_lr03_GAP_adamw_5555kernel1120ep_acc99.89061737060547.pth")
+import_model("Finetune_lr04_GAP_adam_reduceLR_5555kernel123ep_acc99.82498168945312acc297.24085998535156.pth")
+import_model("whatis.pth")
+import_model("acc99.80310821533203acc297.53914642333984.pth")
+import_model("FT_BEST_9989to_acc99.84686279296875acc297.4645767211914.pth")
 
 def test_acc(model, test_loader=test_loader):
     correct = 0
@@ -205,7 +158,10 @@ def test_acc(model, test_loader=test_loader):
 
         return f"{100.0*correct/total}"
 
-accuracy = float(test_acc(model))
-accuracy2 = float(test_acc(model, test_loader2))
-print(f"Acc: {accuracy}, Acc2: {accuracy2}, Time: {time.perf_counter() - start_time}")
+for i in range(len(model_arr)):
+    accuracy = float(test_acc(model_arr[i]))
+    accuracy2 = float(test_acc(model_arr[i], test_loader2))
+
+    print(f"model: {model_name_arr[i]}")
+    print(f"Acc: {accuracy},\t Acc2: {accuracy2},\t Time: {time.perf_counter() - start_time}")
 
