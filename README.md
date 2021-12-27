@@ -1,7 +1,7 @@
 # MNISTClassification
 -----
 Classify hand written alphabet data with accuracy 99.x
-<img src='img/Result.jpg' align="center" width=800>  
+<img src='imgs/Result.jpg' align="center" width=800>  
 
 ## What is it?
 Build a cnn model to classify handwritten alphabet lowercase characters.
